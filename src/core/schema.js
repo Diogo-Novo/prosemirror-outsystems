@@ -1,101 +1,208 @@
-// schema.js (updated)
+import { Schema } from 'prosemirror-model'
 
-import { Schema } from 'prosemirror-model';
-import { schema as basicSchema } from 'prosemirror-schema-basic';
-import { tableNodes } from 'prosemirror-tables';
+export const letterSchema = new Schema({
+    nodes: {
+        doc: {
+            content: 'letter'
+        },
 
-// Create DOM parser specifications for basic nodes
-const basicNodes = {
-  doc: {
-    content: 'block+'
-  },
-  paragraph: {
-    content: 'inline*',
-    group: 'block',
-    parseDOM: [{ tag: 'p' }],
-    toDOM: () => ['p', 0]
-  },
-  text: {
-    group: 'inline'
-  },
-  // Add other basic nodes as needed
-};
+        text: {
+            group: 'inline'
+        },
 
-// Extend nodes with tables
-const nodes = {
-  ...basicNodes,
-  ...tableNodes({
-    tableGroup: 'block',
-    cellContent: 'block+',
-    cellAttributes: {
-      background: { default: null },
-      colspan: { default: 1 },
-      rowspan: { default: 1 }
-    }
-  }),
-  change: {
-    attrs: {
-      user: { default: null },
-      timestamp: { default: null },
-      type: { default: 'insert' }
+        // =========================
+        // Letter Root
+        // =========================
+        letter: {
+            content: `
+        header
+        confidentiality?
+        recipient
+        accessibility_notice?
+        date
+        case_reference?
+        salutation
+        subject
+        body
+        signoff
+      `.replace(/\s+/g, ' ').trim(),
+            defining: true,
+            toDOM() {
+                return ['article', { 'data-letter': 'true' }, 0]
+            }
+        },
+
+        // =========================
+        // Header (logo + org info)
+        // =========================
+        header: {
+            content: 'logo org_details',
+            isolating: true,
+            toDOM() {
+                return ['header', { 'data-header': 'true' }, 0]
+            }
+        },
+
+        logo: {
+            atom: true,
+            selectable: false,
+            toDOM() {
+                return ['div', { 'data-logo': 'true' }]
+            }
+        },
+
+        org_details: {
+            content: 'paragraph+',
+            toDOM() {
+                return ['div', { 'data-org-details': 'true' }, 0]
+            }
+        },
+
+        // =========================
+        // Notices
+        // =========================
+        confidentiality: {
+            content: 'text*',
+            toDOM() {
+                return ['p', { 'data-confidential': 'true' }, 0]
+            }
+        },
+
+        accessibility_notice: {
+            content: 'paragraph+',
+            isolating: true,
+            toDOM() {
+                return ['aside', { 'data-accessibility': 'true' }, 0]
+            }
+        },
+
+        // =========================
+        // Recipient block
+        // =========================
+        recipient: {
+            content: 'paragraph+',
+            isolating: true,
+            toDOM() {
+                return ['address', { 'data-recipient': 'true' }, 0]
+            }
+        },
+
+        date: {
+            content: 'text*',
+            toDOM() {
+                return ['p', { 'data-date': 'true' }, 0]
+            }
+        },
+
+        case_reference: {
+            content: 'paragraph+',
+            isolating: true,
+            toDOM() {
+                return ['section', { 'data-case-ref': 'true' }, 0]
+            }
+        },
+
+        // =========================
+        // Letter content
+        // =========================
+        salutation: {
+            content: 'text*',
+            toDOM() {
+                return ['p', { 'data-salutation': 'true' }, 0]
+            }
+        },
+
+        subject: {
+            content: 'text*',
+            defining: true,
+            toDOM() {
+                return ['p', { 'data-subject': 'true' }, 0]
+            }
+        },
+
+        body: {
+            content: 'block+',
+            toDOM() {
+                return ['section', { 'data-body': 'true' }, 0]
+            }
+        },
+
+        signoff: {
+            content: 'paragraph+',
+            toDOM() {
+                return ['section', { 'data-signoff': 'true' }, 0]
+            }
+        },
+
+        paragraph: {
+            content: 'inline*',
+            group: 'block',
+            toDOM() {
+                return ['p', 0]
+            }
+        }
     },
-    inline: true,
-    group: 'inline',
-    content: 'inline*',
-    parseDOM: [{
-      tag: 'span[data-change-type]',
-      getAttrs: dom => ({
-        user: dom.getAttribute('data-user'),
-        timestamp: dom.getAttribute('data-timestamp'),
-        type: dom.getAttribute('data-change-type')
-      })
-    }],
-    toDOM: node => [
-      'span',
-      {
-        class: `change change-${node.attrs.type}`,
-        'data-user': node.attrs.user,
-        'data-timestamp': node.attrs.timestamp,
-        'data-change-type': node.attrs.type
-      },
-      0
-    ]
-  }
-};
 
-// Marks configuration
-const marks = {
-  underline: {
-    parseDOM: [
-      { tag: 'u' },
-      { tag: 'span[style*="underline"]' },
-      { style: 'text-decoration=underline' }
-    ],
-    toDOM: () => ['u', 0]
-  },
-  highlight: {
-    attrs: { color: { default: 'yellow' } },
-    parseDOM: [{
-      tag: 'mark',
-      getAttrs: dom => ({
-        color: dom.getAttribute('data-color') || 
-               dom.style.backgroundColor || 
-               'yellow'
-      })
-    }],
-    toDOM: mark => [
-      'mark',
-      {
-        'data-color': mark.attrs.color,
-        style: `background-color: ${mark.attrs.color}`
-      },
-      0
-    ]
-  },
-  // Include other marks from basic schema as needed
-  strong: basicSchema.marks.strong,
-  em: basicSchema.marks.em,
-  // ... etc
-};
+    marks: {
+        strong: {
+            toDOM() {
+                return ['strong', 0]
+            }
+        },
 
-export const editorSchema = new Schema({ nodes, marks });
+        em: {
+            toDOM() {
+                return ['em', 0]
+            }
+        },
+
+        link: {
+            attrs: { href: {} },
+            inclusive: false,
+            toDOM(node) {
+                return ['a', { href: node.attrs.href }, 0]
+            }
+        },
+
+        // =========================
+        // Track changes marks
+        // =========================
+        insertion: {
+            attrs: {
+                user: {},
+                timestamp: {}
+            },
+            inclusive: true,
+            toDOM(mark) {
+                return [
+                    'span',
+                    {
+                        'data-inserted': 'true',
+                        'data-user': mark.attrs.user,
+                        'data-ts': mark.attrs.timestamp
+                    },
+                    0
+                ]
+            }
+        },
+
+        deletion: {
+            attrs: {
+                user: {},
+                timestamp: {}
+            },
+            inclusive: false,
+            toDOM(mark) {
+                return [
+                    'span',
+                    {
+                        'data-deleted': 'true',
+                        'data-user': mark.attrs.user,
+                        'data-ts': mark.attrs.timestamp
+                    },
+                    0
+                ]
+            }
+        }
+    }
+})

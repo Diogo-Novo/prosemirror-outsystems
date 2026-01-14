@@ -11,7 +11,7 @@ import postcss from 'rollup-plugin-postcss';
 const production = !process.env.ROLLUP_WATCH;
 
 export default {
-  input: 'src/index.js',
+  input: 'src/editor.js',
   output: {
     file: 'dist/prosemirror-outsystems.js',
     format: 'iife',
