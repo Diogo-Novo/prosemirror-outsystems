@@ -1,33 +1,40 @@
-/**
- * Build Script
- * Compiles source files into dist/
- */
+#!/usr/bin/env node
 
-import { rollup } from 'rollup';
-import config from '../rollup.config.js';
-import { promises as fs } from 'fs';
+const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
-async function build() {
-  console.log('🔨 Building ProseMirror for OutSystems...');
-  
-  try {
-    // Ensure dist directory exists
-    await fs.mkdir('dist', { recursive: true });
-    
-    // Build with Rollup
-    const bundle = await rollup(config);
-    await bundle.write(config.output);
-    await bundle.close();
-    
-    console.log('✅ Build complete!');
-    console.log('📦 Output:');
-    console.log('   - dist/prosemirror-outsystems.js');
-    console.log('   - dist/prosemirror-outsystems.css');
-    
-  } catch (error) {
-    console.error('❌ Build failed:', error);
-    process.exit(1);
-  }
+console.log('🔨 Building ProseMirror for OutSystems...\n');
+
+// Clean dist folder
+console.log('🧹 Cleaning dist folder...');
+const distPath = path.join(__dirname, '..', 'dist');
+if (fs.existsSync(distPath)) {
+  fs.rmSync(distPath, { recursive: true });
+}
+fs.mkdirSync(distPath);
+
+// Run TypeScript compiler for type declarations
+console.log('📝 Generating type declarations...');
+execSync('tsc --emitDeclarationOnly', { stdio: 'inherit' });
+
+// Run Rollup
+console.log('📦 Bundling with Rollup...');
+execSync('rollup -c', { stdio: 'inherit' });
+
+console.log('\n✅ Build complete!\n');
+console.log('Output files:');
+console.log('  - dist/prosemirror-outsystems.js');
+console.log('  - dist/prosemirror-outsystems.css');
+
+if (process.env.NODE_ENV === 'production') {
+  console.log('  - dist/prosemirror-outsystems.min.js');
+  console.log('  - dist/prosemirror-outsystems.min.css');
 }
 
-build();
+console.log('\n📊 Bundle size:');
+const jsSize = fs.statSync(path.join(distPath, 'prosemirror-outsystems.js')).size;
+console.log(`  JS: ${(jsSize / 1024).toFixed(2)} KB`);
+
+const cssSize = fs.statSync(path.join(distPath, 'prosemirror-outsystems.css')).size;
+console.log(`  CSS: ${(cssSize / 1024).toFixed(2)} KB`);

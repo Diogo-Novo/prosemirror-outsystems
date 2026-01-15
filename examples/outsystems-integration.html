@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OutSystems Integration Pattern</title>
+  <link rel="stylesheet" href="../dist/prosemirror-outsystems.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .section {
+      margin: 30px 0;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+    .section h2 {
+      margin-top: 0;
+    }
+    code {
+      background: #fff;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>OutSystems Integration Pattern</h1>
+  
+  <div class="section">
+    <h2>Pattern 1: Single Editor Instance</h2>
+    <p>Most common pattern for OutSystems blocks.</p>
+    <div id="editor1"></div>
+    <p><code>ProseMirrorOS.create('#editor1', { id: 'my-editor' })</code></p>
+  </div>
+
+  <div class="section">
+    <h2>Pattern 2: Multiple Instances</h2>
+    <p>Managing multiple editors on the same page.</p>
+    <div id="editor2" style="margin-bottom: 20px;"></div>
+    <div id="editor3"></div>
+    <p><code>ProseMirrorOS.getInstance('editor-2')</code></p>
+  </div>
+
+  <div class="section">
+    <h2>Pattern 3: Dynamic Creation/Destruction</h2>
+    <button onclick="createDynamic()">Create Editor</button>
+    <button onclick="destroyDynamic()">Destroy Editor</button>
+    <div id="dynamic-container" style="margin-top: 15px;"></div>
+  </div>
+
+  <div class="section">
+    <h2>Pattern 4: Data Binding</h2>
+    <div id="editor4"></div>
+    <div style="margin-top: 15px;">
+      <strong>Bound Value:</strong>
+      <pre id="bound-value" style="background: white; padding: 10px; margin-top: 10px;">{ }</pre>
+    </div>
+  </div>
+
+  <script src="../dist/prosemirror-outsystems.js"></script>
+  <script>
+    // Pattern 1: Single instance
+    ProseMirrorOS.create('#editor1', {
+      id: 'my-editor',
+      placeholder: 'Single editor instance...',
+      content: '<p>This is editor 1</p>'
+    });
+
+    // Pattern 2: Multiple instances
+    ProseMirrorOS.create('#editor2', {
+      id: 'editor-2',
+      placeholder: 'First editor...',
+      content: '<p>This is editor 2</p>'
+    });
+
+    ProseMirrorOS.create('#editor3', {
+      id: 'editor-3',
+      placeholder: 'Second editor...',
+      content: '<p>This is editor 3</p>'
+    });
+
+    // Pattern 3: Dynamic creation
+    let dynamicEditor = null;
+    
+    function createDynamic() {
+      if (dynamicEditor) {
+        alert('Editor already exists!');
+        return;
+      }
+      
+      dynamicEditor = ProseMirrorOS.create('#dynamic-container', {
+        id: 'dynamic-editor',
+        placeholder: 'Dynamically created editor...'
+      });
+    }
+
+    function destroyDynamic() {
+      if (!dynamicEditor) {
+        alert('No editor to destroy!');
+        return;
+      }
+      
+      ProseMirrorOS.destroy('dynamic-editor');
+      dynamicEditor = null;
+    }
+
+    // Pattern 4: Data binding (typical OutSystems pattern)
+    const editor4 = ProseMirrorOS.create('#editor4', {
+      id: 'editor-4',
+      placeholder: 'Type to see data binding...',
+      content: '<p>Edit this text</p>',
+      onChange: (content) => {
+        // Update OutSystems variable
+        document.getElementById('bound-value').textContent = JSON.stringify(content, null, 2);
+      }
+    });
+  </script>
+</body>
+</html>
