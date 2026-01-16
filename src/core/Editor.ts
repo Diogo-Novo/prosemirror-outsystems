@@ -133,9 +133,14 @@ export class Editor {
    */
   public isEmpty(): boolean {
     const doc = this.view.state.doc;
-    return doc.childCount === 1 && 
-           doc.firstChild?.isTextblock && 
+    if(doc && doc.firstChild) {
+        return doc.childCount === 1 && 
+           doc.firstChild.isTextblock && 
            doc.firstChild.content.size === 0;
+    }
+    else {
+        return true;
+    }
   }
 
   /**

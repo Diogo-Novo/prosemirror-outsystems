@@ -19,7 +19,7 @@ class ProseMirrorOS {
    * @param config - Editor configuration
    * @returns Editor instance
    */
-  static create(container: string | HTMLElement, config: Partial<EditorConfig> = {}): Editor {
+   static create(container: string | HTMLElement, config: Partial<EditorConfig> = {}): Editor {
     const element = typeof container === 'string' 
       ? document.querySelector(container) 
       : container;

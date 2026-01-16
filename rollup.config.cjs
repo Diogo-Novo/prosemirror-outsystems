@@ -1,12 +1,12 @@
-import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import typescript from '@rollup/plugin-typescript';
-import postcss from 'rollup-plugin-postcss';
-import terser from '@rollup/plugin-terser';
+const resolve = require('@rollup/plugin-node-resolve').default;
+const commonjs = require('@rollup/plugin-commonjs');
+const typescript = require('@rollup/plugin-typescript');
+const postcss = require('rollup-plugin-postcss');
+const terser = require('@rollup/plugin-terser').default;
 
 const production = process.env.NODE_ENV === 'production';
 
-export default [
+module.exports = [
   {
     input: 'src/index.ts',
     output: [
@@ -24,9 +24,7 @@ export default [
       },
     ].filter(Boolean),
     plugins: [
-      resolve({
-        browser: true,
-      }),
+      resolve({ browser: true }),
       commonjs(),
       typescript({
         tsconfig: './tsconfig.json',
